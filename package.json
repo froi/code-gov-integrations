@@ -1,0 +1,34 @@
+{
+  "name": "code-gov-integrations",
+  "version": "1.0.0",
+  "description": "Package for third party integrations being used by code.gov and its projects",
+  "main": "index.js",
+  "scripts": {
+    "test": "./node_modules/.bin nyc tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GSA/code-gov-integrations.git"
+  },
+  "keywords": [
+    "code-gov",
+    "gov",
+    "government",
+    "integrations"
+  ],
+  "author": "Code.gov team",
+  "license": "CC0-1.0",
+  "bugs": {
+    "url": "https://github.com/GSA/code-gov-integrations/issues"
+  },
+  "homepage": "https://github.com/GSA/code-gov-integrations#readme",
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "eslint": "^5.4.0",
+    "mocha": "^5.2.0",
+    "nyc": "^12.0.2"
+  },
+  "dependencies": {
+    "@octokit/rest": "^15.10.0"
+  }
+}
