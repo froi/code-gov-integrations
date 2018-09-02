@@ -4,11 +4,11 @@ const { rateLimitResponse,
   getReadmeResponse,
   getRepoLanguagesResponse,
   getRepoContributorsResponse,
-  getUsersResponse } = require('./nock_responses/github');
+  getUsersResponse,
+  getRepoIssuesResponse,
+  getRepoDataResposne } = require('./nock_responses/github');
 
 const Github = require('@octokit/rest');
-const fs = require('fs');
-const path = require('path');
 
 const { getData,
   getRateLimit,
@@ -16,13 +16,12 @@ const { getData,
   getRepoData,
   getRepoIssues,
   getRepoLanguages,
-  getGithubClient,
-  getContributors } = require('../libs/github/github');
+  getRepoContributors } = require('../libs/github/github');
 
 describe('Test Github Integration', () => {
   let github;
 
-  before(() => {
+  beforeEach(() => {
     const owner = 'gsa';
     const repo = 'code-gov-api';
     const user = 'froi'
@@ -37,7 +36,12 @@ describe('Test Github Integration', () => {
       .query({ anon: false, per_page: 10, page: 0 })
       .reply(200, getRepoContributorsResponse)
       .get(`/users/${user}`)
-      .reply(200, getUsersResponse);
+      .reply(200, getUsersResponse)
+      .get(`/repos/${owner}/${repo}/issues`)
+      .query({ state: 'open', labels: 'help wanted', per_page: 10, page: 0 })
+      .reply(200, getRepoIssuesResponse)
+      .get(`/repos/${owner}/${repo}`)
+      .reply(200, getRepoDataResposne);
 
     github = new Github();
   });
@@ -65,9 +69,44 @@ describe('Test Github Integration', () => {
 
   describe('get the contributors for a repo', () => {
     it('should return the contributors array', () => {
-      return getContributors({owner: 'gsa', repo: 'code-gov-api', client: github })
+      return getRepoContributors({owner: 'gsa', repo: 'code-gov-api', client: github })
         .then(data => {
           expect(data[0].gh_profile).to.be.equal('https://github.com/froi')
+        });
+    });
+  });
+
+  describe('get the issues for a repo', () => {
+    it('should return an array of issues', () => {
+      const param = { owner: 'gsa', repo: 'code-gov-api', per_page:10, page: 0, client: github};
+      return getRepoIssues(params)
+        .then(data => {
+          const issues = data.issues;
+          expect(data).to.haveOwnProperty('issues');
+          expect(issues).to.be.instanceOf(Array);
+          expect(issues[0]).to.haveOwnProperty('issue_url');
+          expect(issues[0].issue_url).to.be.equal('https://github.com/GSA/code-gov-api/issues/243');
+        });
+    });
+  });
+
+  describe('get data for a repo', () => {
+    it('should return repo data object', () => {
+      return getRepoData('gsa', 'code-gov-api', github)
+        .then(data => {
+          expect(data).to.haveOwnProperty('repo');
+          expect(data.repo).to.haveOwnProperty('full_name');
+          expect(data.repo.full_name).to.be.equal('GSA/code-gov-api');
+        });
+    });
+  });
+
+  describe('get data for a repo', () => {
+    it('should return repo data object', () => {
+      return getData('gsa', 'code-gov-api', github)
+        .then(data => {
+          expect(data).to.haveOwnProperty('full_name');
+          expect(data.full_name).to.be.equal('GSA/code-gov-api');
         });
     });
   });
