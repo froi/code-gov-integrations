@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: ~/code-gov-api
     docker:
-      - image: circleci/node:8.9.3-stretch
+      - image: circleci/node:8.11.4
     steps:
       - checkout
       - restore_cache:
@@ -21,9 +21,6 @@ jobs:
       - run:
           name: run-linter
           command: npm run lint
-      - run:
-          name: run-security-check
-          command: npm audit
   test:
     working_directory: ~/code-gov-api
     docker:
