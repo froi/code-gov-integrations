@@ -63,18 +63,18 @@ async function getRepoData(owner, repo, client) {
     rateLimit
   }
 }
-async function getRepoIssues({ owner, repo, state='open', labels='help wanted', since=null, per_page=100, page=0, client }) {
-  const requestParams = { owner, repo, state, labels, per_page, page }
+async function getRepoIssues({ owner, repo, state='open', labels='help wanted', since, per_page=100, page=0, client }) {
+  let requestParams = { owner, repo, state, labels, per_page, page}
 
   if(since) {
-    requestParams.since = since;
+    requestParams = Object.assign(requestParams, {since});
   }
 
   let { data: repoIssues, rateLimit: rateLimit} = await paginate(client, client.issues.getForRepo, requestParams);
 
   const issues = repoIssues.map(issue => {
     return {
-      issue_url: issue.issue_url,
+      issue_url: issue.html_url,
       state: issue.state,
       updated_at: issue.updated_at,
       title: issue.title,
@@ -100,6 +100,30 @@ async function getRepoLanguages(owner, repo, client){
     rateLimit: parseRateLimit(response)
   }
 }
+async function getRepoContributors({ owner, repo, anon=false, per_page=10, page=0, client}) {
+  const requestParams = { owner, repo, anon, per_page, page };
+
+  let { data: contributors, rateLimit } = await paginate(client, client.repos.getContributors, requestParams);
+
+  return await Promise.all(
+    contributors.map(async contributor => {
+      const username = contributor.login;
+
+      rateLimit = await handleRateLimit(rateLimit)
+      const user = await client.users.getForUser({ username });
+
+      return {
+        username: contributor.login,
+        contributions: contributor.contributions,
+        full_name: user.data.name,
+        email: user.data.email,
+        gh_profile: user.data.html_url,
+        gh_avatar_url: user.data.avatar_url,
+        company: user.data.company
+      };
+    })
+  );
+}
 
 /**
  *
@@ -108,8 +132,7 @@ async function getRepoLanguages(owner, repo, client){
  * @param {object} githubOptions Github client creation options.
  * @returns {object} Github repository, repository issues, repository README,  object with
  */
-async function getData(owner, repoName, githubOptions={}) {
-  const client = getGithubClient(githubOptions);
+async function getData(owner, repoName, client) {
 
   let rateLimit = await handleRateLimit(await getRateLimit(client));
 
@@ -131,6 +154,8 @@ async function getData(owner, repoName, githubOptions={}) {
     repo.issues = issuesData.issues;
   }
 
+  repo.contributors = await getRepoContributors({owner, repo: repoName, per_page:10, client})
+
   return repo;
 }
 
@@ -141,5 +166,6 @@ module.exports = {
   getRepoData,
   getRepoIssues,
   getRepoLanguages,
-  getGithubClient
+  getGithubClient,
+  getRepoContributors
 }
