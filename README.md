@@ -16,7 +16,9 @@ const githubClientParams = {
     type: 'token',
     token: '[your-gh-token]'
 };
-github.getData('gsa', 'code-gov-integrations', githubClientParams)
+const client = github.getClient(githubClientParams)
+
+github.getData('gsa', 'code-gov-integrations', client)
     .then(data => console.log(data))
     .catch(error => console.error(error));
 ```
