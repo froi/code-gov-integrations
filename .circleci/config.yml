@@ -71,7 +71,7 @@ jobs:
           command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/code-gov-integrations/.npmrc
       - deploy:
           name: Publish to NPM registry
-          command: npm publish
+          command: npm publish --access public
 
 workflows:
   version: 2
@@ -86,7 +86,6 @@ workflows:
             - test
           filters:
             tags:
-              only: /^v.*/
-              ignore: /^v.*-.*/
+              only: /^v(\d+\.*){3}/
             branches:
               ignore: /.*/
