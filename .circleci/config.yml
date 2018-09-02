@@ -1,71 +1,93 @@
-version: 2
-jobs:
-  build:
-    working_directory: ~/code-gov-api
-    docker:
-      - image: circleci/node:8.11.4
-    steps:
-      - checkout
-      - restore_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
-      - run:
-          name: verify-npm-cache
-          command: npm cache verify
-      - run:
-          name: install-node-modules
-          command: npm install --all
-      - save_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
-          paths:
-            - ./node_modules
-      - run:
-          name: run-linter
-          command: npm run lint
-  test:
-    working_directory: ~/code-gov-api
-    docker:
-      - image: circleci/node:8.9.3-stretch
-    environment:
-      NODE_ENV: "testing"
-    steps:
-      - checkout
-      - run:
-          name: download-cc-test-reporter
-          command: curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-      - run:
-          name: make-test-reporter-executable
-          command: chmod +x ./cc-test-reporter
-      - run:
-          command: ./cc-test-reporter before-build
-      - restore_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
-      - run:
-          name: verify-npm-cache
-          command: npm cache verify
-      - run:
-          name: install-node-modules
-          command: npm install --all
-      - save_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
-          paths:
-            - ./node_modules
-      - run:
-          name: run-test
-          command: npm run test
-      - run:
-          name: upload-test-report
-          command: |
-             ./cc-test-reporter after-build -t lcov --exit-code $?
-      - store_test_results:
-          path: test-results
-      - store_artifacts:
-          path: coverage
-          prefix: coverage
-workflows:
-  version: 2
-  build-test-deploy:
-    jobs:
-      - build
-      - test:
-          requires:
-            - build
+	version: 2
+	defaults: &defaults
+	  working_directory: ~/code-gov-integrations
+	  docker:
+	    - image: circleci/node:10.8.0
+	jobs:
+	  build:
+	    <<: *defaults
+	    steps:
+	      - checkout
+	      - restore_cache:
+	          key: dependency-cache-{{ checksum "package.json" }}
+	      - run:
+	          name: install-node-modules
+	          command: npm install
+	      - run:
+	          name: run-linter
+	          command: npm run lint
+	      - run:
+	          name: run-security-check
+	          command: npm audit
+	      - save_cache:
+	          key: dependency-cache-{{ checksum "package.json" }}
+	          paths:
+	            - node_modules
+	      - persist_to_workspace:
+	          root: ~/code-gov-integrations
+	          paths: .
+	  test:
+	    <<: *defaults
+	    environment:
+	      NODE_ENV: "testing"
+	    steps:
+	      - attach_workspace:
+	          at: ~/code-gov-integrations
+	      - run:
+	          name: download-cc-test-reporter
+	          command: curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+	      - run:
+	          name: make-test-reporter-executable
+	          command: chmod +x ./cc-test-reporter
+	      - run:
+	          command: ./cc-test-reporter before-build
+	      - restore_cache:
+	          key: dependency-cache-{{ checksum "package.json" }}
+	      - run:
+	          name: run-test
+	          command: npm test
+	      - save_cache:
+	          key: dependency-cache-{{ checksum "package.json" }}
+	          paths:
+	            - node_modules
+	      - run:
+	          name: upload-test-report
+	          command: |
+	             ./cc-test-reporter after-build -t lcov --exit-code $?
+	      - store_test_results:
+	          path: test-results
+	      - store_artifacts:
+	          path: coverage
+	          prefix: coverage
+	      - persist_to_workspace:
+	          root: ~/code-gov-integrations
+	          paths: .
+	  publish:
+	    <<: *defaults
+	    steps:
+	      - attach_workspace:
+	          at: ~/code-gov-integrations
+	      - run:
+	          name: Authenticate with NPM registry
+	          command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/code-gov-integrations/.npmrc
+	      - deploy:
+	          name: Publish to NPM registry
+              command: npm publish
+
+	workflows:
+	  version: 2
+	  build-test-deploy:
+	    jobs:
+	      - build
+	      - test:
+	          requires:
+	            - build
+	      - publish:
+	          requires:
+	            - test
+	          filters:
+	            tags:
+	              only: /^v.*/
+	              ignore: /^v.*-.*/
+	            branches:
+	              ignore: /.*/
