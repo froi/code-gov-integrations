@@ -1,5 +1,8 @@
 # Code.gov Integrations
 
+[![Maintainability](https://api.codeclimate.com/v1/badges/e0522ebed343c27d8fa1/maintainability)](https://codeclimate.com/github/GSA/code-gov-integrations/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/e0522ebed343c27d8fa1/test_coverage)](https://codeclimate.com/github/GSA/code-gov-integrations/test_coverage)
+
 Small module to house Code.gov integrations with third party services.
 
 ## How to use this module

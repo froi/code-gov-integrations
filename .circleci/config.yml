@@ -1,0 +1,74 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/code-gov-api
+    docker:
+      - image: circleci/node:8.9.3-stretch
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: verify-npm-cache
+          command: npm cache verify
+      - run:
+          name: install-node-modules
+          command: npm install --all
+      - save_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+      - run:
+          name: run-linter
+          command: npm run lint
+      - run:
+          name: run-security-check
+          command: npm audit
+  test:
+    working_directory: ~/code-gov-api
+    docker:
+      - image: circleci/node:8.9.3-stretch
+    environment:
+      NODE_ENV: "testing"
+    steps:
+      - checkout
+      - run:
+          name: download-cc-test-reporter
+          command: curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+      - run:
+          name: make-test-reporter-executable
+          command: chmod +x ./cc-test-reporter
+      - run:
+          command: ./cc-test-reporter before-build
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: verify-npm-cache
+          command: npm cache verify
+      - run:
+          name: install-node-modules
+          command: npm install --all
+      - save_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+      - run:
+          name: run-test
+          command: npm run test
+      - run:
+          name: upload-test-report
+          command: |
+             ./cc-test-reporter after-build -t lcov --exit-code $?
+      - store_test_results:
+          path: test-results.xml
+      - store_artifacts:
+          path: coverage
+          prefix: coverage
+workflows:
+  version: 2
+  build-test-deploy:
+    jobs:
+      - build
+      - test:
+          requires:
+            - build
