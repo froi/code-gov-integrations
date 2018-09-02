@@ -4,6 +4,8 @@
   "description": "Package for third party integrations being used by code.gov and its projects",
   "main": "index.js",
   "scripts": {
+    "lint": "./node_modules/.bin/eslint .",
+    "lint-fix": "./node_modules/.bin/eslint --fix .",
     "test": "./node_modules/.bin/nyc mocha tests"
   },
   "repository": {
@@ -25,6 +27,7 @@
   "devDependencies": {
     "chai": "^4.1.2",
     "eslint": "^5.4.0",
+    "eslint-plugin-mocha": "^5.2.0",
     "mocha": "^5.2.0",
     "nock": "^9.6.1",
     "nyc": "^12.0.2"
