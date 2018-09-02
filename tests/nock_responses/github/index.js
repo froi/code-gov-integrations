@@ -52,7 +52,7 @@ const getRepoContributorsResponse = [
     site_admin: false,
     contributions: 368
   }
-]
+];
 
 const getUsersResponse = {
   "login": "froi",
@@ -86,7 +86,7 @@ const getUsersResponse = {
   "following": 90,
   "created_at": "2012-07-03T12:31:20Z",
   "updated_at": "2018-08-28T16:26:23Z"
-}
+};
 
 const getRepoIssuesResponse = [
   {
@@ -354,7 +354,6 @@ const getRepoDataResposne = {
   "subscribers_count": 14
 };
 
-
 module.exports = {
   rateLimitResponse,
   getReadmeResponse,
@@ -363,4 +362,4 @@ module.exports = {
   getUsersResponse,
   getRepoIssuesResponse,
   getRepoDataResposne
-}
+};

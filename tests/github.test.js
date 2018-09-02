@@ -24,7 +24,7 @@ describe('Test Github Integration', () => {
   beforeEach(() => {
     const owner = 'gsa';
     const repo = 'code-gov-api';
-    const user = 'froi'
+    const user = 'froi';
 
     nock('https://api.github.com')
       .get('/rate_limit').reply(200, rateLimitResponse)
@@ -71,15 +71,14 @@ describe('Test Github Integration', () => {
     it('should return the contributors array', () => {
       return getRepoContributors({owner: 'gsa', repo: 'code-gov-api', client: github })
         .then(data => {
-          expect(data[0].gh_profile).to.be.equal('https://github.com/froi')
+          expect(data[0].gh_profile).to.be.equal('https://github.com/froi');
         });
     });
   });
 
   describe('get the issues for a repo', () => {
     it('should return an array of issues', () => {
-      const param = { owner: 'gsa', repo: 'code-gov-api', per_page:10, page: 0, client: github};
-      return getRepoIssues(params)
+      return getRepoIssues({ owner: 'gsa', repo: 'code-gov-api', per_page:10, page: 0, client: github})
         .then(data => {
           const issues = data.issues;
           expect(data).to.haveOwnProperty('issues');

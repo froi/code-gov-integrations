@@ -11,34 +11,34 @@ const integrations = require('@code.gov/code-gov-integrations');
  */
 
 const searchObjects = [{
-    integration: {
-      name: 'github',
-      params: {
-        type: 'token',
-        token: '[your-token]'
-      },
-    },
-    owner: '[owner]',
-    repo: '[repo-name]'
+  integration: {
+    name: 'github',
+    params: {
+      type: 'token',
+      token: '[your-token]'
+    }
   },
-  {
-    integration: {
-      name: 'github',
-      params: {
-        type: 'token',
-        token: '[your-token]'
-      },
-    },
-    owner: '[owner]',
-    repo: '[repo-name]'
-  }
+  owner: '[owner]',
+  repo: '[repo-name]'
+},
+{
+  integration: {
+    name: 'github',
+    params: {
+      type: 'token',
+      token: '[your-token]'
+    }
+  },
+  owner: '[owner]',
+  repo: '[repo-name]'
+}
 ];
 
 Promise.all(
   searchObjects.map(async searchObject => {
-      return await integrations[searchObject.integration.name].getData(searchObject.owner, searchObject.repo,
-        searchObject.integration.params)
-    })
-  )
+    const client = integrations[searchObject.integration.name].getClient(searchObject.integration.params);
+    return await integrations[searchObject.integration.name].getData(searchObject.owner, searchObject.repo,client);
+  })
+)
   .then(values => console.log(JSON.stringify(values, null, 2)))
   .catch(error => console.error(error));

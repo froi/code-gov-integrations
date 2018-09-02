@@ -1,6 +1,6 @@
-const { getData, getGithubClient } = require('./github');
+const { getData, getClient } = require('./github');
 
 module.exports = {
   getData,
-  getGithubClient
+  getClient
 };
