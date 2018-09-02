@@ -1,18 +1,11 @@
 const Github = require('@octokit/rest');
-const { parseRateLimit, handleRateLimit, paginate } = require('./utils');
+const { parseRateLimit, handleRateLimit, paginate, getRateLimit } = require('./utils');
 
-
-function getGithubClient(options) {
+function getClient(options) {
   const client = new Github();
   client.authenticate(options);
 
   return client;
-}
-
-async function getRateLimit(client) {
-  const response = await client.misc.getRateLimit();
-
-  return response.data.resources.core
 }
 
 async function getRepoReadme(owner, repo, client) {
@@ -54,17 +47,17 @@ async function getRepoData(owner, repo, client) {
     ssh_url: response.data.ssh_url,
     created_at: response.data.created_at,
     updated_at: response.data.updated_at
-  }
+  };
 
   let rateLimit = await handleRateLimit(parseRateLimit(response));
 
   return {
     repo: repoData,
     rateLimit
-  }
+  };
 }
 async function getRepoIssues({ owner, repo, state='open', labels='help wanted', since, per_page=100, page=0, client }) {
-  let requestParams = { owner, repo, state, labels, per_page, page}
+  let requestParams = { owner, repo, state, labels, per_page, page};
 
   if(since) {
     requestParams = Object.assign(requestParams, {since});
@@ -89,7 +82,7 @@ async function getRepoIssues({ owner, repo, state='open', labels='help wanted', 
   return {
     issues,
     rateLimit
-  }
+  };
 }
 async function getRepoLanguages(owner, repo, client){
   const response = await client.repos.getLanguages({owner, repo});
@@ -98,7 +91,7 @@ async function getRepoLanguages(owner, repo, client){
   return {
     languages,
     rateLimit: parseRateLimit(response)
-  }
+  };
 }
 async function getRepoContributors({ owner, repo, anon=false, per_page=10, page=0, client}) {
   const requestParams = { owner, repo, anon, per_page, page };
@@ -109,7 +102,7 @@ async function getRepoContributors({ owner, repo, anon=false, per_page=10, page=
     contributors.map(async contributor => {
       const username = contributor.login;
 
-      rateLimit = await handleRateLimit(rateLimit)
+      rateLimit = await handleRateLimit(rateLimit);
       const user = await client.users.getForUser({ username });
 
       return {
@@ -154,7 +147,7 @@ async function getData(owner, repoName, client) {
     repo.issues = issuesData.issues;
   }
 
-  repo.contributors = await getRepoContributors({owner, repo: repoName, per_page:10, client})
+  repo.contributors = await getRepoContributors({owner, repo: repoName, per_page:10, client});
 
   return repo;
 }
@@ -166,6 +159,6 @@ module.exports = {
   getRepoData,
   getRepoIssues,
   getRepoLanguages,
-  getGithubClient,
+  getClient,
   getRepoContributors
-}
+};

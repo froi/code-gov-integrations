@@ -1,3 +1,9 @@
+async function getRateLimit(client) {
+  const response = await client.misc.getRateLimit();
+
+  return response.data.resources.core;
+}
+
 function parseRateLimit(ghResponse) {
   return {
     limit: ghResponse.headers["x-ratelimit-limit"],
@@ -38,5 +44,6 @@ async function paginate (client, method, params) {
 module.exports = {
   parseRateLimit,
   handleRateLimit,
-  paginate
-}
+  paginate,
+  getRateLimit
+};
