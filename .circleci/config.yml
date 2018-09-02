@@ -52,8 +52,7 @@ jobs:
             - node_modules
       - run:
           name: upload-test-report
-          command: |
-              ./cc-test-reporter after-build -t lcov --exit-code $?
+          command: ./cc-test-reporter after-build -t lcov --exit-code $?
       - store_test_results:
           path: test-results
       - store_artifacts:
@@ -72,7 +71,7 @@ jobs:
           command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/code-gov-integrations/.npmrc
       - deploy:
           name: Publish to NPM registry
-            command: npm publish
+          command: npm publish
 
 workflows:
   version: 2
