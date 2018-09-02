@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "./node_modules/.bin/eslint .",
     "lint-fix": "./node_modules/.bin/eslint --fix .",
-    "test": "./node_modules/.bin/nyc mocha tests"
+    "test": "./node_modules/.bin/nyc mocha --reporter xunit --reporter-options output=test-results/mocha/results.xml tests"
   },
   "repository": {
     "type": "git",
