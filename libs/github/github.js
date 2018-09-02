@@ -100,6 +100,30 @@ async function getRepoLanguages(owner, repo, client){
     rateLimit: parseRateLimit(response)
   }
 }
+async function getContributors({ owner, repo, anon=false, per_page=10, page=0, client}) {
+  const requestParams = { owner, repo, anon, per_page, page };
+
+  let { data: contributors, rateLimit } = await paginate(client, client.repos.getContributors, requestParams);
+
+  return await Promise.all(
+    contributors.map(async contributor => {
+      const username = contributor.login;
+
+      rateLimit = await handleRateLimit(rateLimit)
+      const user = await client.users.getForUser({ username });
+
+      return {
+        username: contributor.login,
+        contributions: contributor.contributions,
+        full_name: user.data.name,
+        email: user.data.email,
+        gh_profile: user.data.html_url,
+        gh_avatar_url: user.data.avatar_url,
+        company: user.data.company
+      };
+    })
+  );
+}
 
 /**
  *
@@ -131,6 +155,8 @@ async function getData(owner, repoName, githubOptions={}) {
     repo.issues = issuesData.issues;
   }
 
+  repo.contributors = await getRepoContributors({owner, repo: repoName, per_page:10, client})
+
   return repo;
 }
 
@@ -141,5 +167,6 @@ module.exports = {
   getRepoData,
   getRepoIssues,
   getRepoLanguages,
-  getGithubClient
+  getGithubClient,
+  getContributors
 }
