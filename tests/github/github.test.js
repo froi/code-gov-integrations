@@ -7,7 +7,7 @@ const {
   getRepoContributorsResponse,
   getUsersResponse,
   getRepoIssuesResponse,
-  getRepoDataResposne } = require('./nock_responses/github');
+  getRepoDataResposne } = require('../nock_responses/github');
 
 const Github = require('@octokit/rest');
 
@@ -17,7 +17,7 @@ const {
   getRepoData,
   getRepoIssues,
   getRepoLanguages,
-  getRepoContributors } = require('../libs/github/github');
+  getRepoContributors } = require('../../libs/github/github');
 
 describe('Test Github Integration', () => {
   let github;
