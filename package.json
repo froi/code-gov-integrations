@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "./node_modules/.bin/eslint .",
     "lint-fix": "./node_modules/.bin/eslint --fix .",
-    "test": "./node_modules/.bin/nyc mocha --reporter xunit --reporter-options output=test-results/mocha/results.xml tests",
+    "test": "./node_modules/.bin/nyc mocha --opts tests/mocha.opts tests",
     "postversion": "git push && git push --tags"
   },
   "repository": {
@@ -30,6 +30,7 @@
     "eslint": "^5.4.0",
     "eslint-plugin-mocha": "^5.2.0",
     "mocha": "^5.2.0",
+    "mocha-junit-reporter": "^1.18.0",
     "nock": "^9.6.1",
     "nyc": "^12.0.2"
   },
