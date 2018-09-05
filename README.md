@@ -1,5 +1,5 @@
 # Code.gov Integrations
-
+[![CircleCI](https://circleci.com/gh/GSA/code-gov-integrations/tree/master.svg?style=shield)](https://circleci.com/gh/GSA/code-gov-integrations/tree/master)
 [![Maintainability](https://api.codeclimate.com/v1/badges/e0522ebed343c27d8fa1/maintainability)](https://codeclimate.com/github/GSA/code-gov-integrations/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/e0522ebed343c27d8fa1/test_coverage)](https://codeclimate.com/github/GSA/code-gov-integrations/test_coverage)
 
