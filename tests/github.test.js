@@ -1,6 +1,7 @@
 const expect = require('chai').expect;
 const nock = require('nock');
-const { rateLimitResponse,
+const {
+  rateLimitResponse,
   getReadmeResponse,
   getRepoLanguagesResponse,
   getRepoContributorsResponse,
@@ -10,8 +11,8 @@ const { rateLimitResponse,
 
 const Github = require('@octokit/rest');
 
-const { getData,
-  getRateLimit,
+const {
+  getData,
   getRepoReadme,
   getRepoData,
   getRepoIssues,
@@ -29,28 +30,41 @@ describe('Test Github Integration', () => {
     nock('https://api.github.com')
       .get('/rate_limit').reply(200, rateLimitResponse)
       .get(`/repos/${owner}/${repo}/readme`)
-      .reply(200, { data: getReadmeResponse })
+      .reply(200, { data: getReadmeResponse }, {
+        "x-ratelimit-limit": 60,
+        "x-ratelimit-remaining": 59,
+        "x-ratelimit-reset": 123456
+      })
       .get(`/repos/${owner}/${repo}/languages`)
       .reply(200, getRepoLanguagesResponse)
       .get(`/repos/${owner}/${repo}/contributors`)
       .query({ anon: false, per_page: 10, page: 0 })
-      .reply(200, getRepoContributorsResponse)
+      .reply(200, getRepoContributorsResponse, {
+        "X-RateLimit-Limit": 60,
+        "X-RateLimit-Remaining": 59,
+        "X-RateLimit-Reset": 123456
+      })
       .get(`/users/${user}`)
-      .reply(200, getUsersResponse)
+      .reply(200, getUsersResponse, {
+        "x-ratelimit-limit": 60,
+        "x-ratelimit-remaining": 59,
+        "x-ratelimit-reset": 123456
+      })
       .get(`/repos/${owner}/${repo}/issues`)
       .query({ state: 'open', labels: 'help wanted', per_page: 10, page: 0 })
-      .reply(200, getRepoIssuesResponse)
+      .reply(200, getRepoIssuesResponse, {
+        "x-ratelimit-limit": 60,
+        "x-ratelimit-remaining": 59,
+        "x-ratelimit-reset": 123456
+      })
       .get(`/repos/${owner}/${repo}`)
-      .reply(200, getRepoDataResposne);
+      .reply(200, getRepoDataResposne, {
+        "x-ratelimit-limit": 60,
+        "x-ratelimit-remaining": 59,
+        "x-ratelimit-reset": 123456
+      });
 
     github = new Github();
-  });
-
-  describe('get the rate limit', () => {
-    it('returns a rate limit object', () => {
-      return getRateLimit(github)
-        .then(rateLimit => expect(rateLimit.limit).to.equal(60));
-    });
   });
 
   describe('get the readme for a repo', () => {
@@ -71,7 +85,8 @@ describe('Test Github Integration', () => {
     it('should return the contributors array', () => {
       return getRepoContributors({owner: 'gsa', repo: 'code-gov-api', client: github })
         .then(data => {
-          expect(data[0].gh_profile).to.be.equal('https://github.com/froi');
+          const { contributors } = data;
+          expect(contributors[0].gh_profile).to.be.equal('https://github.com/froi');
         });
     });
   });
