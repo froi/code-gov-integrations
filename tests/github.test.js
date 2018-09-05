@@ -36,7 +36,11 @@ describe('Test Github Integration', () => {
         "x-ratelimit-reset": 123456
       })
       .get(`/repos/${owner}/${repo}/languages`)
-      .reply(200, getRepoLanguagesResponse)
+      .reply(200, getRepoLanguagesResponse, {
+        "X-RateLimit-Limit": 60,
+        "X-RateLimit-Remaining": 59,
+        "X-RateLimit-Reset": 123456
+      })
       .get(`/repos/${owner}/${repo}/contributors`)
       .query({ anon: false, per_page: 10, page: 0 })
       .reply(200, getRepoContributorsResponse, {
