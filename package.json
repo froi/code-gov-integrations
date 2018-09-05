@@ -1,6 +1,6 @@
 {
   "name": "@code.gov/code-gov-integrations",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Package for third party integrations being used by code.gov and its projects",
   "main": "index.js",
   "scripts": {
