@@ -5,20 +5,21 @@ async function getRateLimit(client) {
 }
 
 function parseRateLimit(ghResponse) {
-  return {
-    limit: ghResponse.headers["x-ratelimit-limit"],
-    remaining: ghResponse.headers["x-ratelimit-remaining"],
-    reset: ghResponse.headers["x-ratelimit-reset"]
-  };
+  if(ghResponse.hasOwnProperty('headers')) {
+    return {
+      limit: ghResponse.headers["x-ratelimit-limit"],
+      remaining: ghResponse.headers["x-ratelimit-remaining"],
+      reset: ghResponse.headers["x-ratelimit-reset"]
+    };
+  }
+
+  return {};
 }
 
 async function handleRateLimit(rateLimit) {
-  const remaining = rateLimit.remaining;
-  const limit = rateLimit.limit;
-  const reset = rateLimit.reset;
+  const { remaining, limit, reset } = rateLimit;
   const now = new Date().getMilliseconds();
   const waitTime = now - reset;
-
   const percentRemaining = remaining / limit;
 
   return percentRemaining <= 0.15
@@ -41,9 +42,20 @@ async function paginate (client, method, params) {
   return { data, rateLimit };
 }
 
+function handleError(error) {
+  console.log(error)
+  const rateLimit = parseRateLimit(error);
+
+  return {
+    error: Object.assign({}, { code: error.code, status: error.status, message: error.message }),
+    rateLimit
+  };
+
+}
 module.exports = {
   parseRateLimit,
   handleRateLimit,
   paginate,
-  getRateLimit
+  getRateLimit,
+  handleError
 };
