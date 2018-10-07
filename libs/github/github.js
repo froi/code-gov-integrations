@@ -22,7 +22,7 @@ async function getRepoReadme(owner, repo, client) {
       }
     });
     readme = response.data;
-    rateLimit = parseRateLimit(response);
+    rateLimit = await handleRateLimit(parseRateLimit(response));
 
   } catch(err) {
     const result = handleError(err);
