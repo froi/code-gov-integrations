@@ -16,15 +16,15 @@ function parseRateLimit(ghResponse) {
   return {};
 }
 
-async function handleRateLimit(rateLimit) {
+async function handleRateLimit({ rateLimit, client }) {
   const { remaining, limit, reset } = rateLimit;
   const now = new Date().getMilliseconds();
   const waitTime = now - reset;
   const percentRemaining = remaining / limit;
 
   return percentRemaining <= 0.15
-    ? new Promise((resolve) => setTimeout(async () => resolve(await getRateLimit()), waitTime))
-    : rateLimit;
+    ? new Promise((resolve) => setTimeout(async () => resolve(await getRateLimit(client)), waitTime))
+    : new Promise((resolve) => setTimeout(async () => resolve(await getRateLimit(client)), 1000));
 
 }
 
