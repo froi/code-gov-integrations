@@ -1,7 +1,10 @@
 async function getRateLimit(client) {
-  const response = await client.misc.getRateLimit();
-
-  return response.data.resources.core;
+  try {
+    const response = await client.misc.getRateLimit();
+    return response.data.resources.core;
+  } catch(error) {
+    throw error;
+  }
 }
 
 function parseRateLimit(ghResponse) {
@@ -23,8 +26,22 @@ async function handleRateLimit({ rateLimit, client }) {
   const percentRemaining = remaining / limit;
 
   return percentRemaining <= 0.15
-    ? new Promise((resolve) => setTimeout(async () => resolve(await getRateLimit(client)), waitTime))
-    : new Promise((resolve) => setTimeout(async () => resolve(await getRateLimit(client)), 1000));
+    ? new Promise((resolve, reject) => setTimeout(async () => {
+      try {
+        const result = await getRateLimit(client);
+        resolve(result);
+      } catch(error) {
+        reject(error)
+      }
+    }, waitTime))
+    : new Promise((resolve, reject) => setTimeout(async () => {
+      try {
+        const result = await getRateLimit(client);
+        resolve(result);
+      } catch(error) {
+        reject(error)
+      }
+    }, 1000));
 
 }
 
