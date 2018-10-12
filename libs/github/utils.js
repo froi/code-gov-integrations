@@ -19,30 +19,23 @@ function parseRateLimit(ghResponse) {
   return {};
 }
 
+function delay(time, value) {
+  return new Promise(function(resolve) {
+    setTimeout(resolve.bind(null, value), time);
+  });
+}
+
 async function handleRateLimit({ rateLimit, client }) {
   const { remaining, limit, reset } = rateLimit;
   const now = new Date().getMilliseconds();
   const waitTime = now - reset;
   const percentRemaining = remaining / limit;
 
-  return percentRemaining <= 0.15
-    ? new Promise((resolve, reject) => setTimeout(async () => {
-      try {
-        const result = await getRateLimit(client);
-        resolve(result);
-      } catch(error) {
-        reject(error)
-      }
-    }, waitTime))
-    : new Promise((resolve, reject) => setTimeout(async () => {
-      try {
-        const result = await getRateLimit(client);
-        resolve(result);
-      } catch(error) {
-        reject(error)
-      }
-    }, 1000));
+  if(percentRemaining <= 0.15) {
+    return await delay(waitTime, await getRateLimit(client));
+  }
 
+  return await delay(1000, await getRateLimit(client));
 }
 
 async function paginate (client, method, params) {
