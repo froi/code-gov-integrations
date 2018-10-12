@@ -41,10 +41,7 @@ async function getRepoData(owner, repo, client) {
   let error = {};
 
   try {
-    const response = await client.repos.get({
-      owner,
-      repo
-    });
+    const response = await client.repos.get({ owner, repo });
 
     repoData = {
       description: response.data.description,
