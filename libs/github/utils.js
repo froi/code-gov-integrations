@@ -48,12 +48,18 @@ async function handleRateLimit({ rateLimit, client }) {
 async function paginate (client, method, params) {
   try {
     let response = await method(params);
-    let rateLimit = await handleRateLimit(parseRateLimit(response));
+    let rateLimit = await handleRateLimit({
+      rateLimit: parseRateLimit(response),
+      client
+    });
 
     let {data} = response;
     while (client.hasNextPage(response)) {
       response = await client.getNextPage(response);
-      rateLimit = await handleRateLimit(parseRateLimit(response));
+      rateLimit = await handleRateLimit({
+        rateLimit: parseRateLimit(response),
+        client
+      });
       data = data.concat(response.data);
     }
 
@@ -64,7 +70,6 @@ async function paginate (client, method, params) {
 }
 
 function handleError(error) {
-  console.log(error)
   const rateLimit = parseRateLimit(error);
 
   return {
