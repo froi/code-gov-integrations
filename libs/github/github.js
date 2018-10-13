@@ -14,6 +14,9 @@ async function getRepoReadme(owner, repo, client) {
   let error = {};
 
   try {
+    rateLimit = await getRateLimit(client);
+    rateLimit = await handleRateLimit({ rateLimit, client });
+
     const response = await client.repos.getReadme({
       owner,
       repo,
@@ -22,11 +25,6 @@ async function getRepoReadme(owner, repo, client) {
       }
     });
     readme = response.data;
-    rateLimit = await handleRateLimit({
-      rateLimte: parseRateLimit(response),
-      client
-    });
-
   } catch(err) {
     const result = handleError(err);
     rateLimit = result.rateLimit;
@@ -36,11 +34,14 @@ async function getRepoReadme(owner, repo, client) {
   return { readme, rateLimit, error };
 }
 async function getRepoData(owner, repo, client) {
-  let repoData = {}
+  let repoData = {};
   let rateLimit = {};
   let error = {};
 
   try {
+    rateLimit = await getRateLimit(client);
+    rateLimit = await handleRateLimit({ rateLimit, client });
+
     const response = await client.repos.get({ owner, repo });
 
     repoData = {
@@ -147,10 +148,9 @@ async function getRepoContributors({ owner, repo, anon=false, per_page=10, page=
       results.data.map(async contributor => {
         const username = contributor.login;
 
-        rateLimit = await handleRateLimit({
-          rateLimit,
-          client
-        });
+        rateLimit = await getRateLimit(client);
+        rateLimit = await handleRateLimit({ rateLimit, client });
+
         const user = await client.users.getForUser({ username });
 
         return {
