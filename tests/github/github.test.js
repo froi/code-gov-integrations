@@ -58,7 +58,7 @@ describe('Test Github Integration', () => {
       expect(client).to.haveOwnProperty('issues');
       expect(client).to.haveOwnProperty('pullRequests');
       expect(client).to.haveOwnProperty('users');
-    })
+    });
   });
   describe('get the readme for a repo', () => {
     before(() => {
@@ -139,7 +139,7 @@ describe('Test Github Integration', () => {
   describe('get the issues for a repo', () => {
     beforeEach(() => {
       nockInterceptor = nockScope.get(`/repos/${owner}/${repo}/issues`)
-        .query({ state: 'open', labels: 'help wanted', per_page: 10, page: 1 })
+        .query({ state: 'open', labels: 'help wanted', per_page: 10, page: 1 });
     });
     it('should return an array of issues', async () => {
       nockInterceptor.reply(200, getRepoIssuesResponse, defaultRateLimit);
@@ -207,8 +207,8 @@ describe('Test Github Integration', () => {
       expect(result.watchers_count).to.be.equal(29);
       expect(result.stargazers_count).to.be.equal(29);
       expect(result.full_name).to.be.equal('GSA/code-gov-api');
-    })
-  })
+    });
+  });
 });
 
 async function errorTests({ nockInterceptor, targetFunction, targetFunctionParams, rateLimit }) {

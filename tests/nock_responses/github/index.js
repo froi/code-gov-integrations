@@ -50,7 +50,7 @@ const getRepoContributorsResponse = [
     received_events_url: "https://api.github.com/users/froi/received_events",
     type: "User",
     site_admin: false,
-    contributions: 368,
+    contributions: 368
   }
 ];
 
