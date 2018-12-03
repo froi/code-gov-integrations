@@ -13,6 +13,7 @@ const Github = require('@octokit/rest');
 
 const {
   getClient,
+  getAllDataForRepo,
   getRepoReadme,
   getRepoData,
   getRepoIssues,
@@ -183,6 +184,31 @@ describe('Test Github Integration', () => {
       });
     });
   });
+  describe('getAllDataForRepo', () => {
+
+    it('should return an object will all repository data', async () => {
+      nockScope
+        .get(`/repos/${owner}/${repo}/readme`)
+        .reply(200, getReadmeResponse, defaultRateLimit)
+        .get(`/repos/${owner}/${repo}/languages`)
+        .reply(200, getRepoLanguagesResponse, defaultRateLimit)
+        .get(`/users/${user}`)
+        .reply(200, getUsersResponse, defaultRateLimit)
+        .get(`/repos/${owner}/${repo}/contributors`)
+        .query({ anon: false, per_page: 10, page: 1 })
+        .reply(200, getRepoContributorsResponse, defaultRateLimit)
+        .get(`/repos/${owner}/${repo}/issues`)
+        .query({ state: 'open', labels: 'help wanted', per_page: 10, page: 1 })
+        .reply(200, getRepoIssuesResponse, defaultRateLimit)
+        .get(`/repos/${owner}/${repo}`).reply(200, getRepoDataResponse, defaultRateLimit);
+
+      const result = await getAllDataForRepo({owner: 'gsa', repoName: 'code-gov-api', client: github});
+      expect(result.forks_count).to.be.equal(18);
+      expect(result.watchers_count).to.be.equal(29);
+      expect(result.stargazers_count).to.be.equal(29);
+      expect(result.full_name).to.be.equal('GSA/code-gov-api');
+    })
+  })
 });
 
 async function errorTests({ nockInterceptor, targetFunction, targetFunctionParams, rateLimit }) {
