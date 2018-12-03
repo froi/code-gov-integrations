@@ -1,6 +1,19 @@
-const { getData, getClient } = require('./github');
+const {
+  getAllDataForRepo,
+  getRepoReadme,
+  getRepoData,
+  getRepoIssues,
+  getRepoLanguages,
+  getClient,
+  getRepoContributors
+} = require('./github');
 
 module.exports = {
-  getData,
-  getClient
+  getAllDataForRepo,
+  getRepoReadme,
+  getRepoData,
+  getRepoIssues,
+  getRepoLanguages,
+  getClient,
+  getRepoContributors
 };
