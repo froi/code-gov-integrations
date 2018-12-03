@@ -1,6 +1,15 @@
 const Github = require('@octokit/rest');
 const { parseRateLimit, handleRateLimit, paginate, getRateLimit, handleError } = require('./utils');
 
+/**
+ * Get an instance of the API client.
+ *
+ * @param {object} options Object with client creation options.
+ * For details on Github client creation visit: https://www.npmjs.com/package/@octokit/rest
+ * @returns {object} An initialized API client.
+ *
+ * @example getClient({ type: 'token', token: 'this-is-not-a-token' })
+ */
 function getClient(options) {
   const client = new Github();
   client.authenticate(options);
@@ -8,7 +17,19 @@ function getClient(options) {
   return client;
 }
 
-async function getRepoReadme(owner, repo, client) {
+/**
+ * Fetch README file contents for the supplied repository.
+ *
+ * @async
+ * @param {object} params Parameters needed by the API client and the client itself.
+ * @param {string} params.owner Repository owner
+ * @param {string} params.repo Repository name
+ * @param {object} params.client API client
+ * @returns {Promise<{ readme: string, rateLimit: object, error: object }>} Object with readme text, rate limit object, and error object.
+ *
+ * @example getRepoReadme({ owner: 'gsa', repo: 'code-gov-integrations', client: apiClient })
+ */
+async function getRepoReadme({ owner, repo, client }) {
   let readme;
   let rateLimit = {};
   let error = {};
@@ -33,7 +54,19 @@ async function getRepoReadme(owner, repo, client) {
 
   return { readme, rateLimit, error };
 }
-async function getRepoData(owner, repo, client) {
+/**
+ * Fetch data for the supplied repository.
+ *
+ * @async
+ * @param {object} params Parameters needed by the API client and the client itself.
+ * @param {string} params.owner Repository owner
+ * @param {string} params.repo Repository name
+ * @param {object} params.client API client
+ * @returns {Promise<{ repo: object, rateLimit: object, error: object }>} Object with repo data, rate limit, and error objects.
+ *
+ * @example getRepoData({ owner: 'gsa', repo: 'code-gov-integrations', client: apiClient })
+ */
+async function getRepoData({ owner, repo, client }) {
   let repoData = {};
   let rateLimit = {};
   let error = {};
@@ -79,7 +112,26 @@ async function getRepoData(owner, repo, client) {
     error
   };
 }
-async function getRepoIssues({ owner, repo, state='open', labels='help wanted', since, per_page=100, page=0, client }) {
+
+/**
+ * Fetch all issues for a suplied repository.
+ *
+ * @async
+ * @param {object} params Parameters needed by the API client and the client itself.
+ * @param {string} params.owner Repository owner
+ * @param {string} params.repo Repository name
+ * @param {string} [params.state="open"] Indicates the state of the issues to return. Can be either open, closed, or all
+ * @param {string} [params.labels="help wanted, code.gov"] A list of comma separated label names. Example: help wanted, code.gov, good first issue
+ * @param {string} [params.since] Only issues updated at or after this time are returned. This is a timestamp in ISO 8601 format: YYYY-MM-DDTHH:MM:SSZ.
+ * @param {number} [params.per_page=100] Results per page (max 100). Defaults to 10
+ * @param {number} [params.page=1] Page number of the results to fetch.
+ * @param {object} params.client API client
+ * @returns {Promise<{ issues: Array, rateLimit: object, error: object }>} Object with issues array, rate limit object, and error object.
+ *
+ * @example getRepoIssues({ owner: 'gsa', repo: 'code-gov-integrations', client: apiClient })
+ * @example getRepoIssues({ owner: 'gsa', repo: 'code-gov-integrations', labels: 'help wanted,code.gov', client: apiClient })
+ */
+async function getRepoIssues({ owner, repo, state='open', labels='help wanted', since, per_page=100, page=1, client }) {
   let requestParams = { owner, repo, state, labels, per_page, page};
   let issues = [];
   let rateLimit = {};
@@ -116,7 +168,20 @@ async function getRepoIssues({ owner, repo, state='open', labels='help wanted', 
 
   return { issues, rateLimit, error };
 }
-async function getRepoLanguages(owner, repo, client){
+
+/**
+ * Fetch all languages used in the supplied repository.
+ *
+ * @async
+ * @param {Object} params Parameters needed by the API client and the client itself.
+ * @param {string} params.owner Repository owner
+ * @param {string} params.repo Repository name
+ * @param {object} params.client API client
+ * @returns {Promise<{languages: Array, rateLimit: object, error: object}>} Object with langauges array, rate limit object, and error object.
+ *
+ * @example getRepoLanguages({ owner: 'gsa', repo: 'code-gov-integrations', client: apiClient })
+ */
+async function getRepoLanguages({ owner, repo, client }){
   let languages = [];
   let rateLimit = {};
   let error = {};
@@ -133,7 +198,24 @@ async function getRepoLanguages(owner, repo, client){
 
   return { languages, rateLimit, error };
 }
-async function getRepoContributors({ owner, repo, anon=false, per_page=10, page=0, client}) {
+
+/**
+ * Fetch all contributors for the supplied repository.
+ *
+ * @async
+ * @param {object} params Parameters needed by the API client and the client itself.
+ * @param {string} params.owner Repository owner
+ * @param {string} params.repo Repository name
+ * @param {boolean} params.anon Include anonymous contributors. Defaults to false.
+ * @param {number} params.per_page Results per page (max 100). Defaults to 10
+ * @param {number} params.page Page number of the results to fetch.
+ * @param {object} params.client Github API client
+ * @returns {Promise<{contributors: Array, rateLimit: object, error: object }>} List of contributors to the passed repository
+ *
+ * @example getRepoContributors({ owner: 'gsa', repo: 'code-gov-integrations', client: apiClient })
+ * @example getRepoContributors({ owner: 'gsa', repo: 'code-gov-integrations', per_page: 100, client: apiClient })
+ */
+async function getRepoContributors({ owner, repo, anon=false, per_page=10, page=1, client}) {
   const requestParams = { owner, repo, anon, per_page, page };
 
   let contributors = [];
@@ -143,7 +225,6 @@ async function getRepoContributors({ owner, repo, anon=false, per_page=10, page=
   try {
     const results = await paginate(client, client.repos.getContributors, requestParams);
     rateLimit = results.rateLimit;
-
     contributors = await Promise.all(
       results.data.map(async contributor => {
         const username = contributor.login;
@@ -174,13 +255,18 @@ async function getRepoContributors({ owner, repo, anon=false, per_page=10, page=
 }
 
 /**
+ * Fetch all data for the supplied repository.
+ * This includes general repository data, issues, contributors, languages, and README file.
  *
- * @param {string} owner Github username for the repository
- * @param {string} repoName Github repository name
- * @param {object} githubOptions Github client creation options.
- * @returns {object} Github repository, repository issues, repository README,  object with
+ * @param {object} params Parameters needed by the API client and the client itself.
+ * @param {string} params.owner Github username for the repository
+ * @param {string} params.repoName Github repository name
+ * @param {object} params.githubOptions Github client creation options.
+ * @returns {Promise<object>} Object with repository data, repository issues, repository README, and repository contributors
+ *
+ * @example getAllDataForRepo({ owner: 'gsa', repo: 'code-gov-integrations', client: apiClient })
  */
-async function getData(owner, repoName, client) {
+async function getAllDataForRepo({ owner, repoName, client }) {
   let rateLimit;
   let repo;
 
@@ -194,7 +280,7 @@ async function getData(owner, repoName, client) {
   }
 
   try {
-    const repoData = await getRepoData(owner, repoName, client);
+    const repoData = await getRepoData({ owner, repo: repoName, client });
     repo = repoData.repo;
     rateLimit = await handleRateLimit({
       rateLimit: repoData.rateLimit,
@@ -205,7 +291,7 @@ async function getData(owner, repoName, client) {
   }
 
   try {
-    const readmeData = await getRepoReadme(owner, repoName, client);
+    const readmeData = await getRepoReadme({ owner, repoName, client });
     repo.readMe = readmeData.readme;
     rateLimit = await handleRateLimit({
       rateLimit: readmeData.rateLimit,
@@ -216,7 +302,7 @@ async function getData(owner, repoName, client) {
   }
 
   try {
-    const repoLanguages = await getRepoLanguages(owner, repoName, client);
+    const repoLanguages = await getRepoLanguages({ owner, repoName, client });
     repo.languages = repoLanguages.languages;
     rateLimit = await handleRateLimit({
       rateLimit: repoLanguages.rateLimit,
@@ -249,7 +335,7 @@ async function getData(owner, repoName, client) {
 }
 
 module.exports = {
-  getData,
+  getAllDataForRepo,
   getRepoReadme,
   getRepoData,
   getRepoIssues,
