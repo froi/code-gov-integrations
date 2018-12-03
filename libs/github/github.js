@@ -259,9 +259,9 @@ async function getRepoContributors({ owner, repo, anon=false, per_page=10, page=
  * This includes general repository data, issues, contributors, languages, and README file.
  *
  * @param {object} params Parameters needed by the API client and the client itself.
- * @param {string} params.owner Github username for the repository
- * @param {string} params.repoName Github repository name
- * @param {object} params.githubOptions Github client creation options.
+ * @param {string} params.owner Repository owner
+ * @param {string} params.repoName Repository name
+ * @param {object} params.client API client instance.
  * @returns {Promise<object>} Object with repository data, repository issues, repository README, and repository contributors
  *
  * @example getAllDataForRepo({ owner: 'gsa', repo: 'code-gov-integrations', client: apiClient })
