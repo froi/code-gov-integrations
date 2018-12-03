@@ -232,7 +232,7 @@ const getRepoIssuesResponse = [
   }
 ];
 
-const getRepoDataResposne = {
+const getRepoDataResponse = {
   id: 70166875,
   node_id: "MDEwOlJlcG9zaXRvcnk3MDE2Njg3NQ==",
   name: "code-gov-api",
@@ -361,5 +361,5 @@ module.exports = {
   getRepoContributorsResponse,
   getUsersResponse,
   getRepoIssuesResponse,
-  getRepoDataResposne
+  getRepoDataResponse
 };
