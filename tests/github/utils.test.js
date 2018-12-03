@@ -4,7 +4,6 @@ chai.use(chaiAsPromised);
 const expect = chai.expect;
 const nock = require('nock');
 
-
 const { getRateLimit, handleError, parseRateLimit, handleRateLimit } = require('../../libs/github/utils');
 const Github = require('@octokit/rest');
 
@@ -81,7 +80,7 @@ describe('utils', () => {
       };
       const rateLimit = parseRateLimit(response);
       expect(rateLimit).to.be.empty;
-    })
+    });
   });
 
   describe('handleRateLimit', () => {
@@ -93,7 +92,7 @@ describe('utils', () => {
         limit: 60,
         remaining: 59,
         reset: date.getMilliseconds()
-      }
+      };
       expect(handleRateLimit({ rateLimit, client })).to.eventually.be.a('object');
     });
     it('should handle rate limit object with 15% or less remaining', () => {
