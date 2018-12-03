@@ -1,4 +1,4 @@
 --reporter mocha-junit-reporter
 --recursive
 --reporter-options toConsole=true,mochaFile=test-results/mocha/results.xml
---timeout 5000
+--timeout 10000
