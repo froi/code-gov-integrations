@@ -142,20 +142,21 @@ async function getRepoIssues({ owner, repo, state='open', labels='help wanted', 
   }
 
   try {
-    const result = await paginate(client, client.issues.getForRepo, requestParams);
-    const repoIssues = result.data;
+    const { data, rateLimit } = await paginate(client, client.issues.getForRepo, requestParams);
 
-    rateLimit = result.rateLimit;
+    // List have to be filtered to remove Pull Requests.
+    // Github API v3 considers all Pull Requests issues. See: https://developer.github.com/v3/issues/#list-issues-for-a-repository
+    const repoIssues = data.filter(issue => issue.hasOwnProperty('pull_request') === false);
 
     issues = repoIssues.map(issue => {
       return {
-        issue_url: issue.html_url,
+        url: issue.html_url,
         state: issue.state,
-        updated_at: issue.updated_at,
         title: issue.title,
         description: issue.description,
         body: issue.body,
-        pull_request: issue.pull_request,
+        labels: issue.labels.map(label => label.name),
+        updated_at: issue.updated_at,
         merged_at: issue.merged_at,
         created_at: issue.created_at
       };
