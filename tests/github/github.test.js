@@ -150,8 +150,8 @@ describe('Test Github Integration', () => {
 
       expect(data).to.haveOwnProperty('issues');
       expect(issues).to.be.instanceOf(Array);
-      expect(issues[0]).to.haveOwnProperty('issue_url');
-      expect(issues[0].issue_url).to.be.equal('https://github.com/GSA/code-gov-api/issues/243');
+      expect(issues[0]).to.haveOwnProperty('url');
+      expect(issues[0].url).to.be.equal('https://github.com/GSA/code-gov-api/issues/243');
     });
     it('should return an error', async () => {
       await errorTests({
