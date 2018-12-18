@@ -78,7 +78,7 @@ async function handleRateLimit({ rateLimit, client }) {
  * @example
  * let requestParams = {
  *   owner: 'gsa',
- *   repo: 'code-gov-integrations,
+ *   repo: 'code-gov-integrations',
  *   state: 'open',
  *   labels: 'help wanted,code.gov',
  *   per_page: 10,
