@@ -3,15 +3,13 @@ const Octokit = require('@octokit/rest')
 const { parseRateLimit, handleRateLimit, getRateLimit, handleError } = require('./utils');
 
 /**
- * Get an instance of the API client. When authenticating with the Github API
- * a user and password must be used. If the user account has 2FA enabled a
- * oauth token must be passed as the password.
+ * Get an instance of the API client.
  *
  * @param {object} options Object with client creation options.
  * For details on Github client creation visit: https://www.npmjs.com/package/@octokit/rest
  * @returns {object} An initialized API client.
  *
- * @example getClient({ username: 'greatGHUser', password: 'this-is-not-a-password' })
+ * @example getClient({ token: 'this-is-not-a-token' })
  */
 function getClient(options) {
   return new Octokit({
