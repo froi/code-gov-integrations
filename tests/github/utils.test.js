@@ -33,7 +33,6 @@ describe('utils', () => {
   describe('handleError', () => {
     it('should parse and return error and rateLimit objects', () => {
       const errorResponse = {
-        code: 404,
         status: "Not Found",
         message: "Not Found Error",
         headers: {
@@ -47,7 +46,7 @@ describe('utils', () => {
 
       expect(result).to.haveOwnProperty('error');
       expect(result).to.haveOwnProperty('rateLimit');
-      expect(Object.keys(result.error)).to.deep.equals(['code','status', 'message']);
+      expect(Object.keys(result.error)).to.deep.equals(['status', 'message']);
       expect(Object.keys(result.rateLimit)).to.deep.equals(['limit', 'remaining', 'reset']);
     });
   });

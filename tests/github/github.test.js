@@ -52,7 +52,7 @@ describe('Test Github Integration', () => {
 
       nockScope.get('/', null, {reqheaders: {"Authorization": "token not-a-token"}}).reply(200, {});
 
-      const client = getClient({type:'token', token:'not-a-token'});
+      const client = getClient({ token:'not-a-token' });
 
       expect(client).to.haveOwnProperty('repos');
       expect(client).to.haveOwnProperty('issues');
@@ -62,7 +62,7 @@ describe('Test Github Integration', () => {
   });
   describe('get the readme for a repo', () => {
     before(() => {
-      nockInterceptor = nockScope.get(`/repos/${owner}/${repo}/readme`);
+      nockInterceptor = nockScope.get(`/repos/${owner}/${repo}/readme?ref=master`);
     });
     it('should return the repo readme text', async () => {
       nockInterceptor.reply(200, getReadmeResponse, defaultRateLimit);
@@ -122,6 +122,7 @@ describe('Test Github Integration', () => {
       const data = await getRepoContributors({
         owner: 'gsa', repo: 'code-gov-api', client: github
       });
+
       const { contributors } = data;
       expect(contributors[0].gh_profile).to.be.equal('https://github.com/froi');
     });
@@ -217,7 +218,6 @@ async function errorTests({ nockInterceptor, targetFunction, targetFunctionParam
     rateLimit
   );
   const { error } = await targetFunction(targetFunctionParams);
-  expect(error).to.haveOwnProperty('code');
   expect(error).to.haveOwnProperty('message');
   expect(error).to.haveOwnProperty('status');
 }
