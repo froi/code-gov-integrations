@@ -1,20 +1,37 @@
-const Github = require('@octokit/rest');
-const { parseRateLimit, handleRateLimit, paginate, getRateLimit, handleError } = require('./utils');
+const Octokit = require('@octokit/rest')
+  .plugin(require('@octokit/plugin-throttling'))
+const { parseRateLimit, handleRateLimit, getRateLimit, handleError } = require('./utils');
 
 /**
- * Get an instance of the API client.
+ * Get an instance of the API client. When authenticating with the Github API
+ * a user and password must be used. If the user account has 2FA enabled a
+ * oauth token must be passed as the password.
  *
  * @param {object} options Object with client creation options.
  * For details on Github client creation visit: https://www.npmjs.com/package/@octokit/rest
  * @returns {object} An initialized API client.
  *
- * @example getClient({ type: 'token', token: 'this-is-not-a-token' })
+ * @example getClient({ username: 'greatGHUser', password: 'this-is-not-a-password' })
  */
 function getClient(options) {
-  const client = new Github();
-  client.authenticate(options);
+  return new Octokit({
+    auth: `token ${options.token}`,
+    throttle: {
+      onRateLimit: (retryAfter, options) => {
+        console.warn(
+          `Request quota exhausted for request ${options.method} ${options.url}`)
 
-  return client;
+        if (options.request.retryCount === 3) { // only retries once
+          console.log(`Retrying after ${retryAfter} seconds!`)
+          return true;
+        }
+      },
+      onAbuseLimit: (retryAfter, options) => {
+        // does not retry, only logs a warning
+        console.warn(`Abuse detected for request ${options.method} ${options.url}`)
+      }
+    }
+  });
 }
 
 /**
@@ -41,9 +58,7 @@ async function getRepoReadme({ owner, repo, client }) {
     const response = await client.repos.getReadme({
       owner,
       repo,
-      headers: {
-        accept: 'application/vnd.github.v3.raw+json'
-      }
+      ref: 'master'
     });
     readme = response.data;
   } catch(err) {
@@ -142,7 +157,7 @@ async function getRepoIssues({ owner, repo, state='open', labels='help wanted', 
   }
 
   try {
-    const { data, rateLimit } = await paginate(client, client.issues.getForRepo, requestParams);
+    const data = await client.paginate(client.issues.listForRepo.endpoint(requestParams));
 
     // List have to be filtered to remove Pull Requests.
     // Github API v3 considers all Pull Requests issues. See: https://developer.github.com/v3/issues/#list-issues-for-a-repository
@@ -188,7 +203,7 @@ async function getRepoLanguages({ owner, repo, client }){
   let error = {};
 
   try {
-    const response = await client.repos.getLanguages({ owner, repo });
+    const response = await client.repos.listLanguages({ owner, repo });
     languages = Object.keys(response.data);
     rateLimit = parseRateLimit(response);
   } catch(err) {
@@ -224,16 +239,15 @@ async function getRepoContributors({ owner, repo, anon=false, per_page=10, page=
   let error = {};
 
   try {
-    const results = await paginate(client, client.repos.getContributors, requestParams);
-    rateLimit = results.rateLimit;
+    const results = await client.paginate(client.repos.listContributors.endpoint(requestParams));
     contributors = await Promise.all(
-      results.data.map(async contributor => {
+      results.map(async contributor => {
         const username = contributor.login;
 
         rateLimit = await getRateLimit(client);
         rateLimit = await handleRateLimit({ rateLimit, client });
 
-        const user = await client.users.getForUser({ username });
+        const user = await client.users.getByUsername({ username });
 
         return {
           username: contributor.login,
