@@ -76,26 +76,35 @@ async function handleRateLimit({ rateLimit, client }) {
  * @returns {Promise<{data: *, rateLimit: object}>}
  *
  * @example
- * let requestParams = { owner: 'gsa', repo: 'code-gov-integrations, state: 'open', labels: 'help wanted,code.gov', per_page: 10, page: 1};
+ * let requestParams = {
+ *   owner: 'gsa',
+ *   repo: 'code-gov-integrations',
+ *   state: 'open',
+ *   labels: 'help wanted,code.gov',
+ *   per_page: 10,
+ *   page: 1};
  * const result = await paginate(client, client.issues.getForRepo, requestParams);
  */
 async function paginate (client, method, params) {
   try {
-    let rateLimit = await getRateLimit(client);
-
-    rateLimit = await handleRateLimit({ rateLimit, client });
+    await handleRateLimit({
+      rateLimit: await getRateLimit(client),
+      client
+    });
 
     let response = await method(params);
     let {data} = response;
 
     while (client.hasNextPage(response)) {
-      rateLimit = await getRateLimit(client);
-      rateLimit = await handleRateLimit({ rateLimit, client });
+      await handleRateLimit({
+        rateLimit: await getRateLimit(client),
+        client
+      });
       response = await client.getNextPage(response);
       data = data.concat(response.data);
     }
 
-    return { data, rateLimit };
+    return data;
   } catch(error) {
     throw error;
   }
