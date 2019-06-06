@@ -50,8 +50,10 @@ async function getRepoReadme({ owner, repo, client }) {
   let error = {};
 
   try {
-    rateLimit = await getRateLimit(client);
-    rateLimit = await handleRateLimit({ rateLimit, client });
+    await handleRateLimit({
+      rateLimit: await getRateLimit(client),
+      client
+    });
 
     const response = await client.repos.getReadme({
       owner,
@@ -59,6 +61,7 @@ async function getRepoReadme({ owner, repo, client }) {
       ref: 'master'
     });
     readme = response.data;
+    rateLimit = parseRateLimit(response);
   } catch(err) {
     const result = handleError(err);
     rateLimit = result.rateLimit;
@@ -85,8 +88,10 @@ async function getRepoData({ owner, repo, client }) {
   let error = {};
 
   try {
-    rateLimit = await getRateLimit(client);
-    rateLimit = await handleRateLimit({ rateLimit, client });
+    await handleRateLimit({
+      rateLimit: await getRateLimit(client),
+      client
+    });
 
     const response = await client.repos.get({ owner, repo });
 
@@ -109,10 +114,7 @@ async function getRepoData({ owner, repo, client }) {
       updated_at: response.data.updated_at
     };
 
-    rateLimit = await handleRateLimit({
-      rateLimit: parseRateLimit(response),
-      client
-    });
+    rateLimit = parseRateLimit(response);
   } catch(err) {
     const result = handleError(err);
     rateLimit = result.rateLimit;
@@ -155,6 +157,7 @@ async function getRepoIssues({ owner, repo, state='open', labels='help wanted', 
   }
 
   try {
+
     const data = await client.paginate(client.issues.listForRepo.endpoint(requestParams));
 
     // List have to be filtered to remove Pull Requests.
@@ -202,6 +205,7 @@ async function getRepoLanguages({ owner, repo, client }){
 
   try {
     const response = await client.repos.listLanguages({ owner, repo });
+
     languages = Object.keys(response.data);
     rateLimit = parseRateLimit(response);
   } catch(err) {
@@ -237,7 +241,9 @@ async function getRepoContributors({ owner, repo, anon=false, per_page=10, page=
   let error = {};
 
   try {
+
     const results = await client.paginate(client.repos.listContributors.endpoint(requestParams));
+
     contributors = await Promise.all(
       results.map(async contributor => {
         const username = contributor.login;
@@ -275,30 +281,17 @@ async function getRepoContributors({ owner, repo, anon=false, per_page=10, page=
  * @param {string} params.owner Repository owner
  * @param {string} params.repoName Repository name
  * @param {object} params.client API client instance.
- * @returns {Promise<object>} Object with repository data, repository issues, repository README, and repository contributors
+ * @returns {Promise<object>} Object with repository data, repository issues, repository README,
+ * and repository contributors
  *
  * @example getAllDataForRepo({ owner: 'gsa', repo: 'code-gov-integrations', client: apiClient })
  */
 async function getAllDataForRepo({ owner, repoName, client }) {
-  let rateLimit;
   let repo;
-
-  try {
-    rateLimit = await handleRateLimit({
-      rateLimit: await getRateLimit(client),
-      client
-    });
-  } catch(error) {
-    rateLimit = {};
-  }
 
   try {
     const repoData = await getRepoData({ owner, repo: repoName, client });
     repo = repoData.repo;
-    rateLimit = await handleRateLimit({
-      rateLimit: repoData.rateLimit,
-      client
-    });
   } catch(error) {
     throw error;
   }
@@ -306,10 +299,6 @@ async function getAllDataForRepo({ owner, repoName, client }) {
   try {
     const readmeData = await getRepoReadme({ owner, repoName, client });
     repo.readMe = readmeData.readme;
-    rateLimit = await handleRateLimit({
-      rateLimit: readmeData.rateLimit,
-      client
-    });
   } catch(error) {
     repo.readMe = '';
   }
@@ -317,10 +306,6 @@ async function getAllDataForRepo({ owner, repoName, client }) {
   try {
     const repoLanguages = await getRepoLanguages({ owner, repoName, client });
     repo.languages = repoLanguages.languages;
-    rateLimit = await handleRateLimit({
-      rateLimit: repoLanguages.rateLimit,
-      client
-    });
   } catch(error) {
     repo.languages = [];
   }
@@ -328,10 +313,6 @@ async function getAllDataForRepo({ owner, repoName, client }) {
   if(repo.has_issues) {
     try {
       const issuesData = await getRepoIssues({ owner, repo: repoName, per_page:10, client });
-      rateLimit = await handleRateLimit({
-        rateLimit: issuesData.rateLimit,
-        client
-      });
       repo.issues = issuesData.issues;
     } catch(error) {
       repo.issues = [];

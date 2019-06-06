@@ -68,7 +68,7 @@ async function handleRateLimit({ rateLimit, client }) {
 
 }
 
-/**
+
  * Handle errors from the API client and transform them into the package error object.
  * @param {object} error API client error object.
  * @returns {object} Object with the package's error object and the current rateLimit information.
