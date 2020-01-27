@@ -36,7 +36,7 @@
     "nyc": "^13.3.0"
   },
   "dependencies": {
-    "@octokit/plugin-throttling": "^2.4.0",
+    "@octokit/plugin-throttling": "^3.2.0",
     "@octokit/rest": "^16.16.5"
   }
 }
